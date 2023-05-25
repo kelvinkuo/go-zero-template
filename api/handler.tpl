@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/zeromicro/go-zero/rest/httpx"
+	"gitlab.com/rainman-tech/backend/go-kit/rmzero"
 	{{.ImportPackages}}
 )
 
@@ -20,7 +21,7 @@ func {{.HandlerName}}(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
-			{{if .HasResp}}httpx.OkJsonCtx(r.Context(), w, resp){{else}}httpx.Ok(w){{end}}
+			{{if .HasResp}}rmzero.OkJsonCtx(r.Context(), w, resp){{else}}httpx.Ok(w){{end}}
 		}
 	}
 }
