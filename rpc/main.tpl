@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	{{.imports}}
+	"gitlab.com/rainman-tech/backend/go-kit/rmzero"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -29,6 +30,10 @@ func main() {
 			reflection.Register(grpcServer)
 		}
 	})
+	
+	// rpc log
+	s.AddUnaryInterceptors(rmzero.LoggerInterceptor)
+
 	defer s.Stop()
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
