@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	{{.imports}}
-	"gitlab.com/rainman-tech/backend/go-kit/rmzero"
+	"gitlab.com/kelvinkuo/go-kit/kkzero"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -32,7 +32,7 @@ func main() {
 	})
 	
 	// rpc log
-	s.AddUnaryInterceptors(rmzero.LoggerInterceptor)
+	s.AddUnaryInterceptors(kkzero.LoggerInterceptor)
 
 	defer s.Stop()
 
