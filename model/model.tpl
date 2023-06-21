@@ -1,12 +1,19 @@
 package {{.pkg}}
 {{if .withCache}}
 import (
+    "context"
+    "time"
+
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 {{else}}
+import (
+    "context"
+    "time"
 
-import "github.com/zeromicro/go-zero/core/stores/sqlx"
+    "github.com/zeromicro/go-zero/core/stores/sqlx"
+)
 {{end}}
 var _ {{.upperStartCamelObject}}Model = (*custom{{.upperStartCamelObject}}Model)(nil)
 
@@ -15,7 +22,7 @@ type (
 	// and implement the added methods in custom{{.upperStartCamelObject}}Model.
 	{{.upperStartCamelObject}}Model interface {
 		{{.lowerStartCamelObject}}Model
-		DeleteSoft(ctx context.Context, session sqlx.Session, data *HomestayOrder) error
+		DeleteSoft(ctx context.Context, session sqlx.Session, data *{{.upperStartCamelObject}}) error
 		// Trans(ctx context.Context, fn func(context context.Context, session sqlx.Session) error) error
 		// RowBuilder() squirrel.SelectBuilder
 		// CountBuilder(field string) squirrel.SelectBuilder
