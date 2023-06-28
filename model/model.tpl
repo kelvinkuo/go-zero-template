@@ -101,7 +101,7 @@ func (m *default{{.upperStartCamelObject}}Model) FindOneByQuery(ctx context.Cont
 
 // FindOneById just like FindOneByQuery but use data.Id as query condition
 func (m *default{{.upperStartCamelObject}}Model) FindOneById(ctx context.Context, data *{{.upperStartCamelObject}}) (*{{.upperStartCamelObject}}, error) {
-    return m.FindOneByQuery(ctx, m.AllFieldsBuilder().Where("Id = ?", data.Id))
+    return m.FindOneByQuery(ctx, m.AllFieldsBuilder().Where("id = ?", data.Id))
 }
 
 // FindAll returns all valid rows in the table
