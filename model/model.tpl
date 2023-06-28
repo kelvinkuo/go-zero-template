@@ -22,7 +22,16 @@ type (
 	// and implement the added methods in custom{{.upperStartCamelObject}}Model.
 	{{.upperStartCamelObject}}Model interface {
 		{{.lowerStartCamelObject}}Model
-		DeleteSoft(ctx context.Context, session sqlx.Session, data *{{.upperStartCamelObject}}) error
+		AllFieldsBuilder() squirrel.SelectBuilder
+		{{if .withCache}}
+
+        {{else}}
+		DeleteSoft(ctx context.Context, data *{{.upperStartCamelObject}}) error
+		FindOneByQuery(ctx context.Context, selectBuilder squirrel.SelectBuilder) (*{{.upperStartCamelObject}}, error)
+		FindOneById(ctx context.Context, data *{{.upperStartCamelObject}}) (*{{.upperStartCamelObject}}, error)
+		FindAll(ctx context.Context, orderBy string) ([]*{{.upperStartCamelObject}}, error)
+		FindPageListByPage(ctx context.Context, selectBuilder squirrel.SelectBuilder, page, pageSize int64, orderBy string) ([]*{{.upperStartCamelObject}}, error)
+        {{end}}
 		// Trans(ctx context.Context, fn func(context context.Context, session sqlx.Session) error) error
 		// RowBuilder() squirrel.SelectBuilder
 		// CountBuilder(field string) squirrel.SelectBuilder
@@ -48,11 +57,101 @@ func New{{.upperStartCamelObject}}Model(conn sqlx.SqlConn{{if .withCache}}, c ca
 	}
 }
 
+// AllFieldsBuilder return a SelectBuilder with select("*")
+func (m *default{{.upperStartCamelObject}}Model) AllFieldsBuilder() squirrel.SelectBuilder {
+    return squirrel.Select("*").From(m.table)
+}
+
 // DeleteSoft set deleted_at with CURRENT_TIMESTAMP
-func (m *default{{.upperStartCamelObject}}Model) DeleteSoft(ctx context.Context, session sqlx.Session, data *{{.upperStartCamelObject}}) error {
-	data.DeletedAt = time.Now()
-	if err := m.Update(ctx, session, data); err != nil {
-		return errors.Wrapf(xerr.NewErrMsg("删除数据失败"), "{{.upperStartCamelObject}}Model delete err : %+v", err)
-	}
-	return nil
+func (m *default{{.upperStartCamelObject}}Model) DeleteSoft(ctx context.Context, data *{{.upperStartCamelObject}}) error {
+    builder := squirrel.Update(m.table)
+    builder = builder.Set("deleted_at", sql.NullTime{
+        Time:  time.Now(),
+        Valid: true,
+    })
+    builder = builder.Where("id = ?", data.Id)
+    query, args, err := builder.ToSql()
+    if err != nil {
+        return err
+    }
+
+    if _, err := m.conn.ExecCtx(ctx, query, args...); err != nil {
+        return err
+    }
+    return nil
+}
+
+// FindOneByQuery if table has deleted_at use FindOneByQuery instead of FindOne
+func (m *default{{.upperStartCamelObject}}Model) FindOneByQuery(ctx context.Context, selectBuilder squirrel.SelectBuilder) (*{{.upperStartCamelObject}}, error) {
+    selectBuilder = selectBuilder.Where("deleted_at is null").Limit(1)
+    query, args, err := selectBuilder.ToSql()
+    if err != nil {
+        return nil, err
+    }
+
+    var resp {{.upperStartCamelObject}}
+    err = m.conn.QueryRowCtx(ctx, &resp, query, args...)
+    switch err {
+    case nil:
+        return &resp, nil
+    default:
+        return nil, err
+    }
+}
+
+// FindOneById just like FindOneByQuery but use data.Id as query condition
+func (m *default{{.upperStartCamelObject}}Model) FindOneById(ctx context.Context, data *{{.upperStartCamelObject}}) (*{{.upperStartCamelObject}}, error) {
+    return m.FindOneByQuery(ctx, m.AllFieldsBuilder().Where("Id = ?", data.Id))
+}
+
+// FindAll returns all valid rows in the table
+func (m *default{{.upperStartCamelObject}}Model) FindAll(ctx context.Context, orderBy string) ([]*{{.upperStartCamelObject}}, error) {
+    selectBuilder := m.AllFieldsBuilder()
+    if orderBy == "" {
+        selectBuilder = selectBuilder.OrderBy("id DESC")
+    } else {
+        selectBuilder = selectBuilder.OrderBy(orderBy)
+    }
+
+    query, args, err := selectBuilder.Where("deleted_at is null").ToSql()
+    if err != nil {
+        return nil, err
+    }
+
+    var resp []*{{.upperStartCamelObject}}
+    err = m.conn.QueryRowsCtx(ctx, &resp, query, args...)
+    switch err {
+    case nil:
+        return resp, nil
+    default:
+        return nil, err
+    }
+}
+
+// FindPageListByPage -
+func (m *default{{.upperStartCamelObject}}Model) FindPageListByPage(ctx context.Context, selectBuilder squirrel.SelectBuilder, page, pageSize int64, orderBy string) ([]*{{.upperStartCamelObject}}, error) {
+    if orderBy == "" {
+        selectBuilder = selectBuilder.OrderBy("id DESC")
+    } else {
+        selectBuilder = selectBuilder.OrderBy(orderBy)
+    }
+
+    if page < 1 {
+        page = 1
+    }
+    offset := (page - 1) * pageSize
+
+    query, args, err := selectBuilder.Where("deleted_at is null").Offset(uint64(offset)).Limit(uint64(pageSize)).ToSql()
+    if err != nil {
+        return nil, err
+    }
+
+    var resp []*{{.upperStartCamelObject}}
+    err = m.conn.QueryRowsCtx(ctx, &resp, query, args...)
+    switch err {
+    case nil:
+        return resp, nil
+    default:
+        return nil, err
+    }
 }
