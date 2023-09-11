@@ -2,6 +2,7 @@ package {{.pkg}}
 {{if .withCache}}
 import (
     "context"
+    "database/sql"
     "time"
     
     "github.com/Masterminds/squirrel"
@@ -11,6 +12,7 @@ import (
 {{else}}
 import (
     "context"
+    "database/sql"
     "time"
     
     "github.com/Masterminds/squirrel"
