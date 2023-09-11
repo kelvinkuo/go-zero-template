@@ -3,15 +3,17 @@ package {{.pkg}}
 import (
     "context"
     "time"
-
-	"github.com/zeromicro/go-zero/core/stores/cache"
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
+    
+    "github.com/Masterminds/squirrel"
+    "github.com/zeromicro/go-zero/core/stores/cache"
+    "github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 {{else}}
 import (
     "context"
     "time"
-
+    
+    "github.com/Masterminds/squirrel"
     "github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 {{end}}
