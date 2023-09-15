@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	{{.importPackages}}
+	_ "github.com/kelvinkuo/gokit/zero"
 )
 
 var configFile = flag.String("f", "etc/{{.serviceName}}.yaml", "the config file")
