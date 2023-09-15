@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"gitlab.com/kelvinkuo/go-kit/kkzero"
+	"github.com/kelvinkuo/gokit/zero"
 	{{.ImportPackages}}
 )
 
@@ -21,7 +21,7 @@ func {{.HandlerName}}(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
-			{{if .HasResp}}kkzero.OkJsonCtx(r.Context(), w, resp){{else}}httpx.Ok(w){{end}}
+			{{if .HasResp}}zero.OkJsonCtx(r.Context(), w, resp){{else}}httpx.Ok(w){{end}}
 		}
 	}
 }
